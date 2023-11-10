@@ -47,33 +47,45 @@ def root():
 
 @app.post("/post")
 def get_post() -> Timestamp:
-    return Timestamp()
+    return Timestamp(id=0, timestamp=0)
 
 
 @app.get("/dog")
 def get_dog(kind: Annotated[Optional[DogType], Query(  
-    description="Available values: terrier, buldog, dalmatian"
+    description="Available values: terrier, bulldog, dalmatian"
 )] = None) -> List[Dog]:
     if kind is None:
-        return list(dogs_db.items())
+        return [dog for dog in dogs_db.values()]
     else:
-        return [dog for dog in dogs_db if dog.kind == kind]
+        return [dog for dog in dogs_db.values() if dog.kind == kind]
 
 
 @app.post("/dog")
 def create_dog(new_dog: Dog) -> Dog:
-    new_id = len(dogs_db)
-    dogs_db[new_id] = Dog(**new_dog)
-    return dogs_db[new_id]
+    new_item_idx = len(dogs_db)
+    dogs_db[new_item_idx] = new_dog
+    
+    return dogs_db[new_item_idx]
 
 
 @app.get("/dog/{pk}")
 def get_dog_by_pk(pk: int) -> Dog:
-    return dogs_db[pk]
+    for dog in dogs_db.values():
+        if dog.pk == pk:
+            return dog
 
 
 @app.patch("/dog/{pk}")
 def update_dog(pk: int, dog: Dog) -> Dog:
-    dogs_db[pk].name = dog.name
-    dogs_db[pk].kind = dog.kind
-    return dogs_db[pk]  
+
+    idx = -1
+    for key, curr_dog in dogs_db.items():
+        if curr_dog.pk == pk:
+            idx = key
+            break
+    
+    dogs_db[idx].name = dog.name
+    dogs_db[idx].pk = dog.pk
+    dogs_db[idx].kind = dog.kind
+    
+    return dogs_db[idx]
