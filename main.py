@@ -42,7 +42,7 @@ post_db = [
 
 @app.get('/', status_code=200)
 def root():
-    return ""
+    return "string"
 
 
 @app.post("/post")
